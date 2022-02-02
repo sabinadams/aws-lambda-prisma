@@ -1,90 +1,86 @@
+require("dotenv").config();
 const serverless = require("serverless-http");
 const express = require("express");
-require('dotenv').config()
+const port = process.env.PORT || 8000;
 
-const { PrismaClient: Client1 } = require("./generated/client");
-const { PrismaClient: Client2 } = require("./generated/client-2");
-
+// Get express application
 const app = express();
 
+// Get prisma clients
+const { PrismaClient: Client1 } = require("./generated/client");
+const { PrismaClient: Client2 } = require("./generated/client-2");
+// Instantiate them
 const prisma = new Client1();
 const prisma2 = new Client2();
 
-const port = process.env.PORT || 8000;
+// Wrapper for async routes
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
 
+// Parse POST bodies
 app.use(express.json());
 
 app.get("/", (req, res) => {
   res.status(200).send("hello world!");
 });
 
-app.get("/user", async (req, res) => {
-  try {
-    const users = await prisma.user.findMany()
+// Get all users
+app.get(
+  "/user",
+  asyncHandler(async (req, res) => {
+    const users = await prisma.user.findMany();
     res.json(users);
-  } catch (e) {
-    res.status(500).json({
-      message: "Something went wrong",
-      ...(process.env.NODE_ENV === "development"
-        ? { devMessage: e.message, devStack: e.stack }
-        : {}),
-    });
-  }
-});
+  })
+);
 
-app.post("/user", async (req, res) => {
-  try {
+// Create a user
+app.post(
+  "/user",
+  asyncHandler(async (req, res) => {
     const { firstName, lastName, username } = req.body;
     const newUser = await prisma.user.create({
       data: { firstName, lastName, username },
     });
 
     res.status(200).json(newUser);
-  } catch (e) {
-    res.status(500).json({
-      message: "Something went wrong",
-      ...(process.env.NODE_ENV === "development"
-        ? { devMessage: e.message, devStack: e.stack }
-        : {}),
-    });
-  }
-});
+  })
+);
 
-app.get("/book", async (req, res) => {
-  try {
+// Get all books
+app.get(
+  "/book",
+  asyncHandler(async (req, res) => {
     const books = await prisma2.book.findMany();
     res.json(books);
-  } catch (e) {
-    res.status(500).json({
-      message: "Something went wrong",
-      ...(process.env.NODE_ENV === "development"
-        ? { devMessage: e.message, devStack: e.stack }
-        : {}),
-    });
-  }
-});
+  })
+);
 
-app.post("/book", async (req, res) => {
-  try {
+// Create a book
+app.post(
+  "/book",
+  asyncHandler(async (req, res) => {
     const { title, pages } = req.body;
     const newBook = await prisma2.book.create({
       data: { title, pages },
     });
 
     res.status(200).json(newBook);
-  } catch (e) {
-    res.status(500).json({
-      message: "Something went wrong",
-      ...(process.env.NODE_ENV === "development"
-        ? { devMessage: e.message, devStack: e.stack }
-        : {}),
-    });
-  }
+  })
+);
+
+// Catch any errors, throw detailed info if in development
+app.use((err, req, res, next) => {
+  res.status(500).json({
+    message: "Something went wrong",
+    ...(process.env.NODE_ENV === "development"
+      ? { devMessage: err.message, devStack: err.stack }
+      : {}),
+  });
 });
 
-// Server
-app.listen(port, () => {
-  console.log(`Listening on: http://localhost:${port}`);
-});
+// Start 'er up!
+app.listen(port, () => console.log(`Listening on: http://localhost:${port}`));
 
+// Export wrapped instance for serverless
 module.exports.handler = serverless(app);
