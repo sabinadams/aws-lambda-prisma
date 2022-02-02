@@ -11,4 +11,4 @@ done
 echo "Temporarily copying over the openssl binary to ./prisma, where it is available to every instance when searched for..."
 cp -fr ./src/generated/**/libquery_engine-rhel-openssl-1.0.x.so.node ./prisma
 
-sleep 3
+sleep 5
