@@ -1,0 +1,35 @@
+service: nodejs-lambda
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: us-east-1
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+	
+plugins:
+  - serverless-plugin-scripts
+custom:
+  scripts:
+    hooks:
+      'before:deploy:deploy': 'sh ./consolidate-prisma-binaries.sh'
+      'after:deploy:deploy': 'echo "Removing temporary binaries from ./prisma" && rm ./prisma/*.node'
+
+# you can add packaging information here
+package:
+  patterns:
+    - '!node_modules/.prisma/client/query-engine-*'
+    - '!node_modules/.prisma/client/libquery_engine-*'
+    - '!src/generated/**/query-engine-*'
+    - '!src/generated/**/libquery_engine-*'
+    - '!node_modules/prisma/*'
+    - '!node_modules/@prisma/engines/*'
+functions:
+  hello:
+    handler: src/server.handler
+    events: 
+      - httpApi: '*'
