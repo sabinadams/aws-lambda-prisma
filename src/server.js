@@ -9,9 +9,12 @@ const app = express();
 // Get prisma clients
 const { PrismaClient: Client1 } = require("./generated/client");
 const { PrismaClient: Client2 } = require("./generated/client-2");
+const { PrismaClient: Client3 } = require("./generated/client-3");
+
 // Instantiate them
 const prisma = new Client1();
 const prisma2 = new Client2();
+const prisma3 = new Client3();
 
 // Wrapper for async routes
 const asyncHandler = (fn) => (req, res, next) => {
@@ -66,6 +69,28 @@ app.post(
     });
 
     res.status(200).json(newBook);
+  })
+);
+
+// Get all profiles
+app.get(
+  "/profile",
+  asyncHandler(async (req, res) => {
+    const profiles = await prisma3.profile.findMany();
+    res.json(profiles);
+  })
+);
+
+// Create a profile
+app.post(
+  "/profile",
+  asyncHandler(async (req, res) => {
+    const { bio, user_id } = req.body;
+    const newProfile = await prisma3.profile.create({
+      data: { bio, user_id },
+    });
+
+    res.status(200).json(newProfile);
   })
 );
 

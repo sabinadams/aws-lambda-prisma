@@ -1,19 +1,29 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider      = "prisma-client-js"
-    binaryTargets = ["native", "rhel-openssl-1.0.x"]
-    output = "../src/generated/client-3"
+  provider      = "prisma-client-js"
+  output        = "../src/generated/client-3"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
-    provider = "sqlite"
-    url      = env("DATABASE3_URL")
+  provider = "mysql"
+  url      = "mysql://w00ccb5h8tfi:pscale_pw_Nh1P3IU7zsOLmzUVOV8hKUAPaytKZuHqak1ZZED3gaQ@6selt8711abp.us-east-4.psdb.cloud/prismacloudtest?sslaccept=strict"
 }
 
-model Book {
-    id    String @id @default(cuid())
-    title String
-    pages Int
+model Post {
+  post_id   Int     @id @default(autoincrement())
+  content   String?
+  title     String
+  author_id Int?
+}
+
+model Profile {
+  bio        String?
+  profile_id Int     @id @default(autoincrement())
+  user_id    Int
+}
+
+model User {
+  email   String  @unique
+  name    String?
+  user_id Int     @id @default(autoincrement())
 }
