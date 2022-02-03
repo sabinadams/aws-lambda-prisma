@@ -7,16 +7,12 @@ provider:
   stage: dev
   region: us-east-1
 
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-	
 plugins:
-  - serverless-plugin-scripts
+  - serverless-scriptable-plugin
 custom:
-  scripts:
+  scriptable:
     hooks:
-      'before:deploy:deploy': 'sh ./consolidate-prisma-binaries.sh'
+      'package:initialize': 'sh ./consolidate-prisma-binaries.sh'
       'after:deploy:deploy': 'echo "Removing temporary binaries from ./prisma" && rm ./prisma/*.node'
 
 # you can add packaging information here
