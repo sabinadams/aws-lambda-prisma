@@ -84,7 +84,9 @@ app.use((err, req, res, next) => {
 
 // Start 'er up!
 app.listen(port, async () => {
+  // Only needed for SQLite
   if (process.env.NODE_ENV === "aws-testing") {
+    // If we are on AWS, our SQLite DBs aren't writable unless in tmp
     await fs.copy("/opt/nodejs/prisma", "/tmp/prisma");
   }
   console.log(
