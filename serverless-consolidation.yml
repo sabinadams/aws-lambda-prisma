@@ -1,31 +1,39 @@
 service: nodejs-lambda
 frameworkVersion: '3'
-
 provider:
   name: aws
   runtime: nodejs12.x
   stage: dev
   region: us-east-1
-
 plugins:
   - serverless-scriptable-plugin
 custom:
   scriptable:
     hooks:
-      'package:initialize': 'sh ./consolidate-prisma-binaries.sh'
-      'after:deploy:deploy': 'echo "Removing temporary binaries from ./prisma" && rm ./prisma/*.node'
-
-# you can add packaging information here
+      'package:initialize': 'sh ./ci/create-layer-content.sh'
+layers:
+  prisma:
+    path: lambda-layers
+    description: 'Layer for Prisma Clients'
+    package:
+      exclude:
+        - 'nodejs/node_modules/.bin/*'
+        - 'nodejs/node_modules/@prisma/engines/*'
+        - 'nodejs/node_modules/.prisma/**/libquery_engine-*'
+        - 'nodejs/prisma/*.prisma'
+      include:
+        - 'nodejs/node_modules/.prisma/client/libquery_engine-rhel-openssl-1.0.x.so.node'
 package:
   patterns:
-    - '!node_modules/.prisma/client/query-engine-*'
-    - '!node_modules/.prisma/client/libquery_engine-*'
-    - '!src/generated/**/query-engine-*'
-    - '!src/generated/**/libquery_engine-*'
-    - '!node_modules/prisma/*'
-    - '!node_modules/@prisma/engines/*'
+    - '!node_modules/.prisma'
+    - '!node_modules/prisma'
+    - '!node_modules/@prisma'
+    - '!lambda-layers'
+    - '!prisma'
 functions:
   hello:
+    layers:
+      - { Ref: PrismaLambdaLayer }
     handler: src/server.handler
     events: 
       - httpApi: '*'
