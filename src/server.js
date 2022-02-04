@@ -7,9 +7,9 @@ const port = process.env.PORT || 8000;
 const app = express();
 
 // Get prisma clients
-const { PrismaClient: Client1 } = require("./generated/client");
-const { PrismaClient: Client2 } = require("./generated/client-2");
-const { PrismaClient: Client3 } = require("./generated/client-3");
+const { PrismaClient: Client1 } = require(".prisma/client-1");
+const { PrismaClient: Client2 } = require(".prisma/client-2");
+const { PrismaClient: Client3 } = require(".prisma/client-3");
 
 // Instantiate them
 const prisma = new Client1();
@@ -25,14 +25,15 @@ const asyncHandler = (fn) => (req, res, next) => {
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.status(200).send("hello world!");
+  console.log(prisma)
+  res.status(200).send(`Welcome`);
 });
 
 // Get all users
 app.get(
   "/user",
   asyncHandler(async (req, res) => {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany()
     res.json(users);
   })
 );
