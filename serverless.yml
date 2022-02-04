@@ -31,9 +31,16 @@ package:
     - '!prisma'
     - '!ci'
     - '!*.*'
-    - '.env'
+    - '!.env'
 functions:
   hello:
+    environment:
+      DATABASE_URL: file:/tmp/prisma/dev.db
+      DATABASE2_URL: file:/tmp/prisma/dev2.db
+      DATABASE3_URL: file:/tmp/prisma/dev3.db
+      DATABASE4_URL: file:/tmp/prisma/dev4.db
+      DATABASE5_URL: file:/tmp/prisma/dev5.db
+      NODE_ENV: aws-testing
     layers:
       - { Ref: PrismaLambdaLayer }
     handler: src/server.handler

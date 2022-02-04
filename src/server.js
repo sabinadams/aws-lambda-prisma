@@ -1,6 +1,8 @@
 require("dotenv").config();
 const serverless = require("serverless-http");
 const express = require("express");
+const fs = require("fs-extra");
+
 const port = process.env.PORT || 8000;
 
 // Get express application
@@ -30,7 +32,7 @@ app.get("/", (req, res) => {
 app.get(
   "/user",
   asyncHandler(async (req, res) => {
-    const users = await prisma.user.findMany()
+    const users = await prisma.user.findMany();
     res.json(users);
   })
 );
@@ -81,7 +83,14 @@ app.use((err, req, res, next) => {
 });
 
 // Start 'er up!
-app.listen(port, () => console.log(`Listening on: http://localhost:${port}`));
+app.listen(port, async () => {
+  if (process.env.NODE_ENV === "aws-testing") {
+    await fs.copy("/opt/nodejs/prisma", "/tmp/prisma");
+  }
+  console.log(
+    `Listening on: http://localhost:${port} in env ${process.env.NODE_ENV}`
+  );
+});
 
 // Export wrapped instance for serverless
 module.exports.handler = serverless(app);
